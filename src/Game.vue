@@ -1,5 +1,5 @@
 <template>
-    <Field/>
+    <Field @mousemove="mouseMove"/>
 </template>
 
 <script>
@@ -11,10 +11,23 @@ export default {
     },
     data: function () {
         return {}
+    },
+
+    mounted() {
+
+    },
+
+    methods: {
+        mouseMove($event) {
+            console.log($event);
+        }
     }
 }
 </script>
 
-<style >
-
+<style scoped>
+.field {
+    height: 1000px;
+}
 </style>
+

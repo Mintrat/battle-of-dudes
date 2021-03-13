@@ -94,9 +94,9 @@ export default {
         },
 
         startFollowingCursor() {
-            window.onmousemove = (even) => {
+            /*window.onmousemove = (even) => {
                 this.lookAtTheCursor(even.clientX, even.clientY);
-            }
+            }*/
         },
 
         lookAtTheCursor(positionCursorX, positionCursorY) {
