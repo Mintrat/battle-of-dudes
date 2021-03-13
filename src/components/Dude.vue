@@ -105,10 +105,9 @@ export default {
         },
 
         lookAtTheCursor(positionCursorX, positionCursorY) {
-            const {y, x} = this.getCenter();
-            const absoluteY = positionCursorY - y;
-            const absoluteX = positionCursorX - x;
-            const rad = (Math.atan(absoluteY / absoluteX)).toFixed(2)
+            const bcr = this.$el.getBoundingClientRect();
+            const cx = bcr.left + bcr.width / 2, cy = bcr.top + bcr.height / 2;
+            const rad = Math.atan2(positionCursorY - cy, positionCursorX - cx);
             this.rad = rad;
         },
 
