@@ -1,5 +1,5 @@
 <template>
-    <Field @mousemove="mouseMove"/>
+    <Field />
 </template>
 
 <script>
@@ -18,9 +18,7 @@ export default {
     },
 
     methods: {
-        mouseMove($event) {
-            console.log($event);
-        }
+        
     }
 }
 </script>

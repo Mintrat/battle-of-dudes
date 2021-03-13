@@ -21,6 +21,11 @@ export default {
             rawLeft: 0,
             rawTop: 0,
             rad: 0,
+            step: 10,
+            cursorPosition: {
+                x: 0,
+                y: 0
+            },
             mapKeys: {
                 'ArrowUp': 'up',
                 'ArrowLeft': 'left',
@@ -31,8 +36,6 @@ export default {
                 'KeyS': 'down',
                 'KeyD': 'right'
             },
-            step: 10,
-
             moveList : {
                 up: () => {
                     this.rawTop -= this.step;
@@ -94,9 +97,11 @@ export default {
         },
 
         startFollowingCursor() {
-            /*window.onmousemove = (even) => {
-                this.lookAtTheCursor(even.clientX, even.clientY);
-            }*/
+            window.onmousemove = (even) => {
+                this.cursorPosition.x = even.clientX;
+                this.cursorPosition.y = even.clientY;
+                this.lookAtTheCursor(this.cursorPosition.x, this.cursorPosition.y);
+            }
         },
 
         lookAtTheCursor(positionCursorX, positionCursorY) {
@@ -111,7 +116,9 @@ export default {
             window.addEventListener('keydown', (e) => {
                 const direction = this.getMoveByKeyCode(e.code);
                 if (direction) {
+                    e.preventDefault();
                     this.moveList[direction]();
+                    this.lookAtTheCursor(this.cursorPosition.x, this.cursorPosition.y);
                 }
             });
         },
