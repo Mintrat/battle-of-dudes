@@ -21,7 +21,7 @@ export default {
             rawLeft: 0,
             rawTop: 0,
             rad: 0,
-            step: 10,
+            step: 2,
             cursorPosition: {
                 x: 0,
                 y: 0
@@ -36,7 +36,7 @@ export default {
                 'KeyS': 'down',
                 'KeyD': 'right'
             },
-            moveList : {
+            actionList : {
                 up: () => {
                     this.rawTop -= this.step;
                 },
@@ -52,7 +52,8 @@ export default {
                 right: () => {
                     this.rawLeft += this.step;
                 }
-            }
+            },
+            runTimeActions: {}
         }
     },
 
@@ -112,20 +113,44 @@ export default {
         },
 
         startFollowingKeyboard() {
-            window.addEventListener('keydown', (e) => {
-                const direction = this.getMoveByKeyCode(e.code);
-                if (direction) {
+            window.addEventListener('keydown', e => {
+                const action = this.getActionByKeyCode(e.code);
+                if (action) {
                     e.preventDefault();
-                    this.moveList[direction]();
+                    this.startAction(action)
                     this.lookAtTheCursor(this.cursorPosition.x, this.cursorPosition.y);
+                }
+            });
+
+            window.addEventListener('keyup', e => {
+                const action = this.getActionByKeyCode(e.code);
+                if (action) {
+                    this.endAction(action);
                 }
             });
         },
 
-        getMoveByKeyCode(keyCode) {
+        getActionByKeyCode(keyCode) {
             const moveDirection = this.mapKeys[keyCode];
             return moveDirection || null;
         },
+
+        startAction(action) {
+            if (!this.runTimeActions[action]) {
+                const timerId = setInterval(() => {
+                    this.actionList[action]();
+                });
+                
+                this.runTimeActions[action] = {timerId: timerId};
+            }
+        },
+
+        endAction(action) {
+            if (this.runTimeActions[action]) {
+                clearTimeout(this.runTimeActions[action].timerId);
+                delete this.runTimeActions[action];
+            }
+        }
     }
 }
 </script>
@@ -136,7 +161,7 @@ export default {
         border: 1px solid black;
         border-radius: 50%;
         position: absolute;
-        transition: left 0.3s, top 0.3s;
+        /* transition: left 0.3s, top 0.3s; */
     }
 
     .weapone {
