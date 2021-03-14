@@ -1,5 +1,7 @@
 <template>
+  <div class="game-board">
     <Field />
+  </div>
 </template>
 
 <script>
@@ -24,8 +26,9 @@ export default {
 </script>
 
 <style scoped>
-.field {
-    height: 1000px;
+.game-board {
+  padding: 30px;
+  height: 100vh;
 }
 </style>
 
