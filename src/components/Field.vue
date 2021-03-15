@@ -2,7 +2,6 @@
     <div  class="field" tabindex="33" >
         <Dude
             :fieldSize="size"
-            :initDude="calculateSize"
             @shoot="shootHandler"
             />
     </div>
