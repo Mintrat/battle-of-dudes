@@ -7,16 +7,23 @@
             left: left,
             top: top
         }">
-        <div class="weapon"></div>
+        <Weapon
+            @shoot="shootHandler"
+            ></Weapon>
     </div>
 </template>
 
 <script>
+import Weapon from './Weapon.vue';
 export default {
     name: "dude",
 
     props: {
-        fieldBounds: {}
+        fieldSize: {}
+    },
+
+    components: {
+        Weapon: Weapon
     },
 
     data: function () {
@@ -27,6 +34,7 @@ export default {
             rawTop: 0,
             rad: 0,
             step: 2,
+            cursorSize: 32,
             cursorPosition: {
                 x: 0,
                 y: 0
@@ -43,25 +51,25 @@ export default {
             },
             actionList : {
                 up: () => {
-                    if(this.rawTop > this.fieldBounds.top) {
+                    if(this.rawTop > 0) {
                         this.rawTop -= this.step;
                     }
                 },
 
                 left: () => {
-                    if(this.rawLeft > this.fieldBounds.left) {
+                    if(this.rawLeft > 0) {
                         this.rawLeft -= this.step;
                     }
                 },
 
                 down: () => {
-                    if(this.rawTop < this.fieldBounds.bottom - this.rawHeight) {
+                    if(this.rawTop < this.fieldSize.height - this.rawHeight) {
                         this.rawTop += this.step;
                     }
                 },
 
                 right: () => {
-                    if(this.rawLeft < this.fieldBounds.right - this.rawWidth) {
+                    if(this.rawLeft < this.fieldSize.width - this.rawWidth) {
                         this.rawLeft += this.step;
                     }
                 }
@@ -93,7 +101,7 @@ export default {
     },
 
     watch: {
-        fieldBounds: function() {
+        fieldSize: function() {
             this.correctPosition();
         }
     },
@@ -107,8 +115,8 @@ export default {
     methods: {
         startFollowingCursor() {
             window.onmousemove = (event) => {
-                this.cursorPosition.x = event.clientX;
-                this.cursorPosition.y = event.clientY;
+                this.cursorPosition.x = event.clientX + this.cursorSize/2;
+                this.cursorPosition.y = event.clientY + this.cursorSize/2;
                 this.lookAtTheCursor(this.cursorPosition.x, this.cursorPosition.y);
             }
         },
@@ -138,11 +146,12 @@ export default {
 
         setStartPos() {
             document.addEventListener("DOMContentLoaded", () => {
-                this.rawLeft = this.fieldBounds.left;
-                this.rawTop = this.fieldBounds.top;
             });
         },
 
+        shootHandler(position) {
+            this.$emit('shoot', position);
+        },
 
         getCenter() {
             const {left, top, height, width} = this.$el.getBoundingClientRect();
@@ -153,16 +162,12 @@ export default {
         },
 
         correctPosition() {
-            if(this.rawTop < this.fieldBounds.top) {
-                this.rawTop = this.fieldBounds.top;
-            } else if(this.rawTop > this.fieldBounds.bottom - this.rawHeight) {
-                this.rawTop = this.fieldBounds.bottom - this.rawHeight;
+            if(this.rawTop > this.fieldSize.height - this.rawHeight) {
+                this.rawTop = this.fieldSize.height - this.rawHeight;
             }
 
-            if(this.rawLeft < this.fieldBounds.left) {
-                this.rawLeft = this.fieldBounds.left;
-            } else if(this.rawLeft > this.fieldBounds.right - this.rawHeight) {
-                this.rawLeft = this.fieldBounds.right - this.rawHeight;
+            if(this.rawLeft > this.fieldSize.width - this.rawHeight) {
+                this.rawLeft = this.fieldSize.width - this.rawHeight;
             }
         },
 
@@ -197,16 +202,5 @@ export default {
         border: 1px solid black;
         border-radius: 50%;
         position: absolute;
-        /* transition: left 0.3s, top 0.3s; */
-    }
-
-    .weapon {
-        background-color: grey;
-        position: absolute;
-        height: 5px;
-        border: 1px solid black;
-        width: 40px;
-        transform: translateX(50%);
-        top: calc(50% - 4px);
     }
 </style>
