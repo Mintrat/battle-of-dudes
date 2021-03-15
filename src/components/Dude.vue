@@ -23,8 +23,8 @@ export default {
         return {
             rawWidth: 50,
             rawHeight: 50,
-            rawLeft: -1000,
-            rawTop: -1000,
+            rawLeft: 0,
+            rawTop: 0,
             rad: 0,
             step: 2,
             cursorPosition: {
@@ -92,6 +92,12 @@ export default {
         },
     },
 
+    watch: {
+        fieldBounds: function() {
+            this.correctPosition();
+        }
+    },
+
     mounted() {
         this.startFollowingCursor();
         this.startFollowingKeyboard();
@@ -99,14 +105,6 @@ export default {
     },
 
     methods: {
-        getCenter() {
-            const {left, top, height, width} = this.$el.getBoundingClientRect();
-            return {
-                x: left + width / 2,
-                y: top + height / 2
-            }
-        },
-
         startFollowingCursor() {
             window.onmousemove = (event) => {
                 this.cursorPosition.x = event.clientX;
@@ -143,6 +141,29 @@ export default {
                 this.rawLeft = this.fieldBounds.left;
                 this.rawTop = this.fieldBounds.top;
             });
+        },
+
+
+        getCenter() {
+            const {left, top, height, width} = this.$el.getBoundingClientRect();
+            return {
+                x: left + width / 2,
+                y: top + height / 2
+            }
+        },
+
+        correctPosition() {
+            if(this.rawTop < this.fieldBounds.top) {
+                this.rawTop = this.fieldBounds.top;
+            } else if(this.rawTop > this.fieldBounds.bottom - this.rawHeight) {
+                this.rawTop = this.fieldBounds.bottom - this.rawHeight;
+            }
+
+            if(this.rawLeft < this.fieldBounds.left) {
+                this.rawLeft = this.fieldBounds.left;
+            } else if(this.rawLeft > this.fieldBounds.right - this.rawHeight) {
+                this.rawLeft = this.fieldBounds.right - this.rawHeight;
+            }
         },
 
         getActionByKeyCode(keyCode) {
