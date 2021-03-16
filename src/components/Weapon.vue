@@ -46,7 +46,7 @@ export default {
             const currentPosition = this.$el.getBoundingClientRect();
             const lookLeft = this.$parent.rad > 1.5 || this.$parent.rad < -1.5;
             const lookTop = this.$parent.rad < 0;
-            const position = {
+            const direction = {
                 start: {
                     x: lookLeft ? currentPosition.left : currentPosition.right,
                     y: lookTop ? currentPosition.top : currentPosition.bottom,
@@ -56,7 +56,8 @@ export default {
                     y: event.clientY + this.cursorSize/2,
                 }
             };
-            this.$emit('shoot', position);
+
+            this.$store.commit('bulletAdd', direction);
         },
 
         initKeys() {

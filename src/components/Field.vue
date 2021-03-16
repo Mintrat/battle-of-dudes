@@ -1,17 +1,22 @@
 <template>
     <div  class="field" tabindex="33" >
-        <Dude
-            :fieldSize="size"
-            @shoot="shootHandler"
+        <Dude />
+        <Bullet
+            v-for="(bullet, index) in $store.state.bullets" :key="index"
+
+            :direction="bullet"
+            :storeKey="index"
             />
     </div>
 </template>
 
 <script>
 import Dude from './Dude.vue'
+import Bullet from './Bullet.vue'
 export default {
     components: {
-        Dude: Dude
+        Dude: Dude,
+        Bullet: Bullet,
     },
     name: "Field",
 
@@ -44,47 +49,11 @@ export default {
                 width: fieldSize.width - 2, //borders
                 height: fieldSize.height - 2,
             }
+            this.$store.commit('fieldUpdateSize', this.size);
         },
 
         removeHandlers() {
             window.removeEventListener('resize', this.calculateSize);
-        },
-
-        shootHandler(position) {
-            const speed = 2;
-            let angle = Math.atan2(position.end.y - position.start.y, position.end.x - position.start.x);
-            let newPosition = {
-                x: position.start.x + speed * Math.cos(angle),
-                y: position.start.y + speed * Math.sin(angle),
-            }
-
-            let bullet = document.createElement('span');
-            bullet.classList.add('bullet');
-            bullet.style.position = 'absolute';
-            let currentBulletPosition = {
-                x: newPosition.x - 30 - 15,
-                y: newPosition.y - 30 - 15,
-            };
-            bullet.style.top = currentBulletPosition.y + 'px';
-            bullet.style.left = currentBulletPosition.x + 'px';
-            this.$el.appendChild(bullet);
-
-            let counter = 0;
-            let timer = setInterval(function() {
-                if(counter >= 150) {
-                    clearTimeout(timer);
-                    bullet.remove();
-                }
-
-                currentBulletPosition = {
-                    x: currentBulletPosition.x + speed * Math.cos(angle),
-                    y: currentBulletPosition.y + speed * Math.sin(angle),
-                }
-                bullet.style.top = currentBulletPosition.y + 'px';
-                bullet.style.left = currentBulletPosition.x + 'px';
-
-                counter++;
-            }, 10);
         },
     },
 }

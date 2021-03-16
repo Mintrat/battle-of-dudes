@@ -8,7 +8,6 @@
             top: top
         }">
         <Weapon
-            @shoot="shootHandler"
             ></Weapon>
     </div>
 </template>
@@ -19,7 +18,6 @@ export default {
     name: "dude",
 
     props: {
-        fieldSize: {}
     },
 
     components: {
@@ -98,6 +96,10 @@ export default {
         top() {
             return this.rawTop + 'px';
         },
+
+        fieldSize() {
+            return this.$store.state.field.size;
+        }
     },
 
     watch: {
@@ -147,10 +149,6 @@ export default {
         setStartPos() {
             document.addEventListener("DOMContentLoaded", () => {
             });
-        },
-
-        shootHandler(position) {
-            this.$emit('shoot', position);
         },
 
         getCenter() {
