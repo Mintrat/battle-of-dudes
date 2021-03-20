@@ -38,25 +38,34 @@ wss.on('connection', function connection(ws) {
 function doAction(user, data) {
     if(data.action) {
         switch (data.action) {
-            case 'initPlayer':
+            case 'getPlayerId':
                 websocketServerSend(user, {
                     action: 'setPlayerId',
                     data: user.id,
                 });
+                break;
+            case 'getPlayers':
                 websocketServerSendAll({
                     action: 'updatePlayers',
                     data: players,
                 });
                 break;
-            case 'updatePosition':
+            case 'updatePlayer':
+                players[user.id] = Object.assign(players[user.id], data.data.data);
                 websocketServerSendAll({
-                    action: 'updatePlayerPosition',
+                    action: 'updatePlayer',
                     data: data.data,
                 });
                 break;
             case 'addBullet':
                 websocketServerSendAll({
                     action: 'addBullet',
+                    data: data.data,
+                });
+                break;
+            case 'deleteBullet':
+                websocketServerSendAll({
+                    action: 'deleteBullet',
                     data: data.data,
                 });
                 break;

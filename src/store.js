@@ -1,7 +1,5 @@
 import {createStore} from "vuex";
 
-const uuid = require('uuid');
-
 export default createStore({
     state () {
         return {
@@ -88,12 +86,10 @@ export default createStore({
             state.players = payload;
         },
 
-        updatePlayerPosition(state, payload) {
+        updatePlayer(state, payload) {
             const playerId = payload.playerId;
-            const myPlayer = playerId === state.myPlayerId;
-            if(state.players[playerId] && !myPlayer) {
-                state.players[playerId].position = payload.position;
-            }
+            state.players[playerId] = state.players[playerId] || {};
+            state.players[playerId] = Object.assign(state.players[playerId], payload.data);
         },
 
         fieldUpdateSize (state, payload) {
@@ -105,8 +101,7 @@ export default createStore({
         },
 
         bulletAdd (state, payload) {
-            const bulletStoreKey = uuid.v4();
-            state.bullets[bulletStoreKey] = payload;
+            state.bullets[payload.storeKey] = payload;
         },
 
         bulletDelete (state, key) {

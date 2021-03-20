@@ -7,6 +7,8 @@
 </template>
 
 <script>
+const uuid = require('uuid');
+
 export default {
     name: "weapon",
 
@@ -24,11 +26,6 @@ export default {
 
     mounted() {
         this.initKeys();
-
-        this.$store.commit('websocketsSubscribe', {
-            action: 'addBullet',
-            callback: this.wsAddBullet,
-        });
     },
 
     unmounted() {
@@ -64,14 +61,11 @@ export default {
             this.$store.commit('websocketsSend', {
                 action: 'addBullet',
                 data: {
+                    storeKey: uuid.v4(),
                     playerId: this.$store.state.myPlayerId,
                     direction: direction,
                 },
             });
-        },
-
-        wsAddBullet(data) {
-            this.$store.commit('bulletAdd', data);
         },
 
         initKeys() {

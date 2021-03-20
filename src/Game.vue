@@ -39,13 +39,38 @@ export default {
             });
 
             this.$store.commit('websocketsSubscribe', {
-                action: 'updatePlayerPosition',
-                callback: this.updatePlayerPosition,
+                action: 'updatePlayer',
+                callback: (data) => {
+                    this.$store.commit('updatePlayer', data);
+                },
+            });
+
+            this.$store.commit('websocketsSubscribe', {
+                action: 'setPlayerId',
+                callback: () => {
+                    this.$store.commit('websocketsSend', {
+                        action: 'updatePlayer',
+                        data: {
+                            playerId: this.$store.state.myPlayerId,
+                            data: {},
+                        }
+                    });
+
+                    this.$store.commit('websocketsSend', {
+                        action: 'getPlayers',
+                        data: {}
+                    });
+                },
             });
 
             this.$store.commit('websocketsSubscribe', {
                 action: 'onOpen',
-                callback: this.initPlayer,
+                callback: () => {
+                    this.$store.commit('websocketsSend', {
+                        action: 'getPlayerId',
+                        data: {}
+                    });
+                },
             });
 
             this.$store.commit('websocketsSubscribe', {
@@ -54,12 +79,19 @@ export default {
                     this.$store.commit('removePlayer', playerId);
                 },
             });
-        },
 
-        initPlayer() {
-            this.$store.commit('websocketsSend', {
-                action: 'initPlayer',
-                data: {}
+            this.$store.commit('websocketsSubscribe', {
+                action: 'addBullet',
+                callback: (data) => {
+                    this.$store.commit('bulletAdd', data);
+                },
+            });
+
+            this.$store.commit('websocketsSubscribe', {
+                action: 'deleteBullet',
+                callback: (data) => {
+                    this.$store.commit('bulletDelete', data);
+                },
             });
         },
 
@@ -69,10 +101,6 @@ export default {
 
         setPlayerId(id) {
             this.$store.commit('setPlayerId', id);
-        },
-
-        updatePlayerPosition(newPosition) {
-            this.$store.commit('updatePlayerPosition', newPosition);
         },
     },
 }

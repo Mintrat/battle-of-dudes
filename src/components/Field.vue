@@ -3,6 +3,7 @@
         <Dude
             v-for="(player, index) in $store.state.players" :key="index"
 
+            :playerId="index"
             :playerPosition="player.position"
             :myPlayer="index === $store.state.myPlayerId"
         />

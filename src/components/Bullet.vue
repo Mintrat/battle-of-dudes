@@ -24,12 +24,14 @@ export default {
         return {
             speed: 5,
             distance: 1300,
-            height: 30,
-            width: 30,
+            height: 10,
+            width: 10,
             currentPosition: {
                 x: 0,
                 y: 0
             },
+            timer: null,
+            damage: 10,
         }
     },
 
@@ -69,15 +71,23 @@ export default {
     methods: {
         init: function() {
             let counter = 0;
-            let timer = setInterval(() => {
+            this.timer = setInterval(() => {
                 if(counter >= this.distance/this.speed) {
-                    clearTimeout(timer);
-                    this.$store.commit('bulletDelete', this.storeKey);
+                    this.delete();
+                    return;
                 }
 
                 this.updatePosition();
                 counter++;
             }, 1);
+        },
+
+        delete: function() {
+            clearTimeout(this.timer);
+            this.$store.commit('websocketsSend', {
+                action: 'deleteBullet',
+                data: this.storeKey,
+            });
         },
 
         updatePosition: function() {
@@ -87,7 +97,48 @@ export default {
                 x: this.currentPosition.x + xDiff,
                 y: this.currentPosition.y + yDiff,
             }
-        }
+
+            const myBullet = this.playerId === this.$store.state.myPlayerId;
+            if(myBullet) {
+                this.findPlayerCollisions();
+            }
+        },
+
+        findPlayerCollisions: function() {
+            const players = this.$store.state.players;
+            for(let playerId in players) {
+                if(playerId !== this.playerId) {
+                    const player = players[playerId];
+                    if(player.position && player.size) {
+                        const playerPosition = {
+                            x1: player.position.x,
+                            x2: player.position.x + player.size.width,
+                            y1: player.position.y,
+                            y2: player.position.y + player.size.height,
+                        }
+                        const collision = this.checkCollision(playerPosition);
+                        if(collision) {
+                            this.$store.commit('websocketsSend', {
+                                action: 'updatePlayer',
+                                data: {
+                                    playerId: playerId,
+                                    data: {
+                                        health: player.health - this.damage,
+                                    }
+                                },
+                            });
+                            this.delete();
+                        }
+                    }
+                }
+            }
+        },
+
+        checkCollision(objectPosition) {
+            const collisionX = objectPosition.x1 <= this.currentPosition.x && this.currentPosition.x <= objectPosition.x2;
+            const collisionY = objectPosition.y1 <= this.currentPosition.y && this.currentPosition.y <= objectPosition.y2;
+            return collisionX && collisionY;
+        },
     }
 }
 </script>
