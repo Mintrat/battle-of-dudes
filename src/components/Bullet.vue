@@ -17,17 +17,19 @@ export default {
     props: {
         direction: {},
         storeKey: {},
+        playerId: {},
     },
 
     data: function () {
         return {
-            speed: 2,
+            speed: 5,
+            distance: 1300,
             height: 30,
             width: 30,
             currentPosition: {
                 x: 0,
                 y: 0
-            }
+            },
         }
     },
 
@@ -55,8 +57,8 @@ export default {
 
     beforeMount() {
         this.currentPosition = {
-            x: this.direction.start.x - 30 - this.width/2,
-            y: this.direction.start.y - 30 - this.height/2
+            x: this.direction.start.x - this.$store.state.field.position.top - this.width/2,
+            y: this.direction.start.y - this.$store.state.field.position.left - this.height/2
         };
     },
 
@@ -68,14 +70,14 @@ export default {
         init: function() {
             let counter = 0;
             let timer = setInterval(() => {
-                if(counter >= 150) {
+                if(counter >= this.distance/this.speed) {
                     clearTimeout(timer);
                     this.$store.commit('bulletDelete', this.storeKey);
                 }
 
                 this.updatePosition();
                 counter++;
-            }, 10);
+            }, 1);
         },
 
         updatePosition: function() {

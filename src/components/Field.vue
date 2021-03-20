@@ -1,10 +1,16 @@
 <template>
     <div  class="field" tabindex="33" >
-        <Dude />
+        <Dude
+            v-for="(player, index) in $store.state.players" :key="index"
+
+            :playerPosition="player.position"
+            :myPlayer="index === $store.state.myPlayerId"
+        />
         <Bullet
             v-for="(bullet, index) in $store.state.bullets" :key="index"
 
-            :direction="bullet"
+            :playerId="bullet.playerId"
+            :direction="bullet.direction"
             :storeKey="index"
             />
     </div>
@@ -25,13 +31,29 @@ export default {
             size: {
                 width: 0,
                 height: 0,
+            },
+            position: {
+                top: 0,
+                left: 0,
             }
         }
+    },
+
+    watch: {
+        size (newSize) {
+            this.$store.commit('fieldUpdateSize', newSize);
+        },
+
+        position (newPosition) {
+            this.$store.commit('fieldUpdatePosition', newPosition);
+        },
     },
 
     mounted () {
         this.calculateSize();
         this.setSizeOnResize();
+
+        this.$store.commit('setupField', this);
     },
 
     unmounted() {
@@ -49,7 +71,10 @@ export default {
                 width: fieldSize.width - 2, //borders
                 height: fieldSize.height - 2,
             }
-            this.$store.commit('fieldUpdateSize', this.size);
+            this.position = {
+                top: fieldSize.top,
+                left: fieldSize.left,
+            }
         },
 
         removeHandlers() {

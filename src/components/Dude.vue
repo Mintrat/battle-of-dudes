@@ -8,7 +8,8 @@
             top: top
         }">
         <Weapon
-            ></Weapon>
+            :myPlayer="myPlayer"
+            />
     </div>
 </template>
 
@@ -18,6 +19,8 @@ export default {
     name: "dude",
 
     props: {
+        playerPosition: {},
+        myPlayer: {},
     },
 
     components: {
@@ -51,24 +54,28 @@ export default {
                 up: () => {
                     if(this.rawTop > 0) {
                         this.rawTop -= this.step;
+                        this.wsUpdatePos({y: this.rawTop});
                     }
                 },
 
                 left: () => {
                     if(this.rawLeft > 0) {
                         this.rawLeft -= this.step;
+                        this.wsUpdatePos({x: this.rawLeft});
                     }
                 },
 
                 down: () => {
                     if(this.rawTop < this.fieldSize.height - this.rawHeight) {
                         this.rawTop += this.step;
+                        this.wsUpdatePos({y: this.rawTop});
                     }
                 },
 
                 right: () => {
                     if(this.rawLeft < this.fieldSize.width - this.rawWidth) {
                         this.rawLeft += this.step;
+                        this.wsUpdatePos({x: this.rawLeft});
                     }
                 }
             },
@@ -99,13 +106,25 @@ export default {
 
         fieldSize() {
             return this.$store.state.field.size;
-        }
+        },
     },
 
     watch: {
         fieldSize: function() {
             this.correctPosition();
-        }
+        },
+
+        playerPosition: function (newPosition) {
+            newPosition = Object.assign({
+                x: this.rawLeft,
+                y: this.rawTop,
+                rotate: this.rad,
+            }, newPosition);
+
+            this.rawLeft = newPosition.x;
+            this.rawTop = newPosition.y;
+            this.rad = newPosition.rotate;
+        },
     },
 
     mounted() {
@@ -116,7 +135,10 @@ export default {
 
     methods: {
         startFollowingCursor() {
-            window.onmousemove = (event) => {
+            if(!this.myPlayer)
+                return;
+
+            this.$store.state.field.component.$el.onmousemove = (event) => {
                 this.cursorPosition.x = event.clientX + this.cursorSize/2;
                 this.cursorPosition.y = event.clientY + this.cursorSize/2;
                 this.lookAtTheCursor(this.cursorPosition.x, this.cursorPosition.y);
@@ -126,10 +148,25 @@ export default {
         lookAtTheCursor(posCursorX, posCursorY) {
             const center = this.getCenter();
             this.rad = Math.atan2(posCursorY - center.y, posCursorX - center.x);
+            this.wsUpdatePos({rotate: this.rad});
+        },
+
+        wsUpdatePos(data) {
+            data = {
+                playerId: this.$store.state.myPlayerId,
+                position: data,
+            };
+            this.$store.commit('websocketsSend', {
+                action: 'updatePosition',
+                data: data,
+            });
         },
 
         startFollowingKeyboard() {
-            window.addEventListener('keydown', e => {
+            if(!this.myPlayer)
+                return;
+
+            this.$store.state.field.component.$el.addEventListener('keydown', e => {
                 const action = this.getActionByKeyCode(e.code);
                 if (action) {
                     e.preventDefault();
@@ -138,7 +175,7 @@ export default {
                 }
             });
 
-            window.addEventListener('keyup', e => {
+            this.$store.state.field.component.$el.addEventListener('keyup', e => {
                 const action = this.getActionByKeyCode(e.code);
                 if (action) {
                     this.endAction(action);
@@ -147,6 +184,9 @@ export default {
         },
 
         setStartPos() {
+            if(!this.myPlayer)
+                return;
+
             document.addEventListener("DOMContentLoaded", () => {
             });
         },

@@ -11,20 +11,24 @@ export default {
     name: "weapon",
 
     props: {
+        myPlayer: {},
     },
 
     data: function () {
         return {
             rawWidth: 40,
             cursorSize: 32,
-            shootKeys: [
-
-            ],
+            shootKeys: [],
         }
     },
 
     mounted() {
         this.initKeys();
+
+        this.$store.commit('websocketsSubscribe', {
+            action: 'addBullet',
+            callback: this.wsAddBullet,
+        });
     },
 
     unmounted() {
@@ -57,15 +61,31 @@ export default {
                 }
             };
 
-            this.$store.commit('bulletAdd', direction);
+            this.$store.commit('websocketsSend', {
+                action: 'addBullet',
+                data: {
+                    playerId: this.$store.state.myPlayerId,
+                    direction: direction,
+                },
+            });
+        },
+
+        wsAddBullet(data) {
+            this.$store.commit('bulletAdd', data);
         },
 
         initKeys() {
-            window.addEventListener('click', this.shoot);
+            if(!this.myPlayer)
+                return;
+
+            this.$store.state.field.component.$el.addEventListener('click', this.shoot);
         },
 
         removeHandlers() {
-            window.removeEventListener('click', this.shoot);
+            if(!this.myPlayer)
+                return;
+
+            this.$store.state.field.component.$el.removeEventListener('click', this.shoot);
         }
     }
 }

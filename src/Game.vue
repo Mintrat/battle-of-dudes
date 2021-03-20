@@ -8,19 +8,73 @@
 import Field from './components/Field.vue';
 export default {
     name: "Game",
-    components: {
-        Field
-    },
-    data: function () {
+
+    data() {
         return {}
     },
 
+    components: {
+        Field
+    },
+
     mounted() {
+        this.$store.commit('websocketsConnect');
+        this.websocketsInit();
+    },
+
+    unmounted() {
+        this.$store.commit('websocketsClose');
     },
 
     methods: {
-        
-    }
+        websocketsInit() {
+            this.$store.commit('websocketsSubscribe', {
+                action: 'updatePlayers',
+                callback: this.updatePlayers,
+            });
+
+            this.$store.commit('websocketsSubscribe', {
+                action: 'setPlayerId',
+                callback: this.setPlayerId,
+            });
+
+            this.$store.commit('websocketsSubscribe', {
+                action: 'updatePlayerPosition',
+                callback: this.updatePlayerPosition,
+            });
+
+            this.$store.commit('websocketsSubscribe', {
+                action: 'onOpen',
+                callback: this.initPlayer,
+            });
+
+            this.$store.commit('websocketsSubscribe', {
+                action: 'removePlayer',
+                callback: (playerId) => {
+                    this.$store.commit('removePlayer', playerId);
+                },
+            });
+        },
+
+        initPlayer() {
+            this.$store.commit('websocketsSend', {
+                action: 'initPlayer',
+                data: {}
+            });
+        },
+
+        updatePlayers(players) {
+            this.$store.commit('updatePlayers', players);
+        },
+
+        setPlayerId(id) {
+            this.$store.commit('setPlayerId', id);
+        },
+
+        updatePlayerPosition(newPosition) {
+            this.$store.commit('updatePlayerPosition', newPosition);
+        },
+    },
 }
 </script>
 
