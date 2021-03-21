@@ -61,11 +61,11 @@ export default {
         },
 
         initKeys() {
-            window.addEventListener('click', this.shoot);
+            window.addEventListener('mousedown', this.shoot);
         },
 
         removeHandlers() {
-            window.removeEventListener('click', this.shoot);
+            window.removeEventListener('mousedown', this.shoot);
         }
     }
 }

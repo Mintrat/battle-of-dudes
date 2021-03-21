@@ -21,9 +21,9 @@ export default {
 
     data: function () {
         return {
-            speed: 2,
-            height: 30,
-            width: 30,
+            speed: 10,
+            height: 10,
+            width: 10,
             currentPosition: {
                 x: 0,
                 y: 0
