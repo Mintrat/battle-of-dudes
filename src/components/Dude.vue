@@ -1,27 +1,48 @@
 <template>
     <div class="dude"
-    :style="{
-            transform: rotate,
-            width: width,
-            height: height,
+         :style="{
             left: left,
             top: top
         }">
-        <div class="weapone"></div>
+        <span class="dude__hp">{{health}}</span>
+        <div class="dude_body"
+            :style="{
+                transform: rotate,
+                width: width,
+                height: height,
+            }">
+            <Weapon
+                :myPlayer="myPlayer"
+                />
+        </div>
     </div>
 </template>
 
 <script>
+import Weapon from './Weapon.vue';
 export default {
     name: "dude",
+
+    props: {
+        playerPosition: {},
+        myPlayer: {},
+        playerId: {},
+    },
+
+    components: {
+        Weapon: Weapon
+    },
+
     data: function () {
         return {
+            maxHealth: 100,
             rawWidth: 50,
             rawHeight: 50,
             rawLeft: 0,
             rawTop: 0,
             rad: 0,
             step: 2,
+            cursorSize: 32,
             cursorPosition: {
                 x: 0,
                 y: 0
@@ -38,19 +59,55 @@ export default {
             },
             actionList : {
                 up: () => {
-                    this.rawTop -= this.step;
+                    if(this.rawTop > 0) {
+                        this.rawTop -= this.step;
+                        this.wsUpdatePlayer({
+                            position: {
+                                x: this.rawLeft,
+                                y: this.rawTop,
+                                rotate: this.rad,
+                            }
+                        });
+                    }
                 },
 
                 left: () => {
-                    this.rawLeft -= this.step;
+                    if(this.rawLeft > 0) {
+                        this.rawLeft -= this.step;
+                        this.wsUpdatePlayer({
+                            position: {
+                                x: this.rawLeft,
+                                y: this.rawTop,
+                                rotate: this.rad,
+                            }
+                        });
+                    }
                 },
 
                 down: () => {
-                    this.rawTop += this.step;
+                    if(this.rawTop < this.fieldSize.height - this.rawHeight) {
+                        this.rawTop += this.step;
+                        this.wsUpdatePlayer({
+                            position: {
+                                x: this.rawLeft,
+                                y: this.rawTop,
+                                rotate: this.rad,
+                            }
+                        });
+                    }
                 },
 
                 right: () => {
-                    this.rawLeft += this.step;
+                    if(this.rawLeft < this.fieldSize.width - this.rawWidth) {
+                        this.rawLeft += this.step;
+                        this.wsUpdatePlayer({
+                            position: {
+                                x: this.rawLeft,
+                                y: this.rawTop,
+                                rotate: this.rad,
+                            }
+                        });
+                    }
                 }
             },
             runTimeActions: {}
@@ -59,8 +116,7 @@ export default {
 
     computed: {
         rotate() {
-            let rad = 'rotate(' + this.rad + 'rad)';
-            return rad;
+            return 'rotate(' + this.rad + 'rad)';
         },
         
         width() {
@@ -72,62 +128,151 @@ export default {
         },
 
         left() {
-            const left = this.rawLeft;
-            return left === 0 ? left : left + 'px';
+            return this.rawLeft + 'px';
         },
 
         top() {
-            const top = this.rawTop;
-            return top === 0 ? top : top + 'px';
+            return this.rawTop + 'px';
+        },
+
+        fieldSize() {
+            return this.$store.state.field.size;
+        },
+
+        health() {
+            const player = this.$store.state.players[this.playerId];
+            if(player && player.health !== undefined) {
+                return player.health;
+            } else {
+                return this.maxHealth;
+            }
+        },
+    },
+
+    watch: {
+        fieldSize: function() {
+            this.correctPosition();
+        },
+
+        playerPosition: function (newPosition) {
+            newPosition = Object.assign({
+                x: this.rawLeft,
+                y: this.rawTop,
+                rotate: this.rad,
+            }, newPosition);
+
+            this.rawLeft = newPosition.x;
+            this.rawTop = newPosition.y;
+            this.rad = newPosition.rotate;
         },
     },
 
     mounted() {
         this.startFollowingCursor();
         this.startFollowingKeyboard();
+        this.setStartPos();
     },
 
     methods: {
-        getCenter() {
-            const {x, y} = this.$el.getBoundingClientRect();
-            
-            return {
-                x: x + this.rawWidth / 2,
-                y: y + this.rawHeight / 2
-            }
-        },
-
         startFollowingCursor() {
-            window.onmousemove = (even) => {
-                this.cursorPosition.x = even.clientX;
-                this.cursorPosition.y = even.clientY;
+            if(!this.myPlayer)
+                return;
+
+            this.$store.state.field.component.$el.onmousemove = (event) => {
+                this.cursorPosition.x = event.clientX + this.cursorSize/2;
+                this.cursorPosition.y = event.clientY + this.cursorSize/2;
                 this.lookAtTheCursor(this.cursorPosition.x, this.cursorPosition.y);
             }
         },
 
-        lookAtTheCursor(positionCursorX, positionCursorY) {
-            const bcr = this.$el.getBoundingClientRect();
-            const cx = bcr.left + bcr.width / 2, cy = bcr.top + bcr.height / 2;
-            const rad = Math.atan2(positionCursorY - cy, positionCursorX - cx);
-            this.rad = rad;
+        lookAtTheCursor(posCursorX, posCursorY) {
+            const center = this.getCenter();
+            this.rad = Math.atan2(posCursorY - center.y, posCursorX - center.x);
+            this.wsUpdatePlayer({
+                position: {
+                    x: this.rawLeft,
+                    y: this.rawTop,
+                    rotate: this.rad,
+                }
+            });
+        },
+
+        wsUpdatePlayer(data) {
+            data = {
+                playerId: this.$store.state.myPlayerId,
+                data: data,
+            };
+            this.$store.commit('websocketsSend', {
+                action: 'updatePlayer',
+                data: data,
+            });
         },
 
         startFollowingKeyboard() {
-            window.addEventListener('keydown', e => {
+            if(!this.myPlayer)
+                return;
+
+            this.$store.state.field.component.$el.addEventListener('keydown', e => {
                 const action = this.getActionByKeyCode(e.code);
                 if (action) {
                     e.preventDefault();
-                    this.startAction(action)
+                    this.startAction(action);
                     this.lookAtTheCursor(this.cursorPosition.x, this.cursorPosition.y);
                 }
             });
 
-            window.addEventListener('keyup', e => {
+            this.$store.state.field.component.$el.addEventListener('keyup', e => {
                 const action = this.getActionByKeyCode(e.code);
                 if (action) {
                     this.endAction(action);
                 }
             });
+        },
+
+        setStartPos() {
+            if(this.myPlayer) {
+                const max = {
+                    x: this.$store.state.field.size.width - this.rawWidth,
+                    y: this.$store.state.field.size.height - this.rawHeight,
+                }
+                this.rawLeft = Math.floor(Math.random() * Math.floor(max.x));
+                this.rawTop = Math.floor(Math.random() * Math.floor(max.y));
+
+                this.wsUpdatePlayer({
+                    health: this.health,
+                    position: {
+                        x: this.rawLeft,
+                        y: this.rawTop,
+                    },
+                    size: {
+                        width: this.rawWidth,
+                        height: this.rawHeight,
+                    }
+                });
+            } else {
+                if(this.playerPosition !== undefined) {
+                    this.rawLeft = this.playerPosition.x;
+                    this.rawTop = this.playerPosition.y;
+                }
+            }
+        },
+
+        getCenter() {
+            const {left, top, height, width} = this.$el.getBoundingClientRect();
+            return {
+                x: left + width / 2,
+                y: top + height / 2
+            }
+        },
+
+        correctPosition() {
+            if(this.rawTop > this.fieldSize.height - this.rawHeight) {
+                this.rawTop = this.fieldSize.height - this.rawHeight;
+            }
+
+            if(this.rawLeft > this.fieldSize.width - this.rawHeight) {
+                this.rawLeft = this.fieldSize.width - this.rawHeight;
+            }
         },
 
         getActionByKeyCode(keyCode) {
@@ -157,20 +302,22 @@ export default {
 
 <style scoped>
     .dude {
+        position: absolute;
+    }
+
+    .dude_body {
         background-color: black;
         border: 1px solid black;
         border-radius: 50%;
-        position: absolute;
-        /* transition: left 0.3s, top 0.3s; */
     }
 
-    .weapone {
-        background-color: grey;
+    .dude__hp {
         position: absolute;
-        height: 5px;
-        border: 1px solid black;
-        width: 40px;
-        transform: translateX(50%);
-        top: calc(50% - 4px);
+        top: -35px;
+        text-align: center;
+        width: 100%;
+        border: 1px solid #ebebeb;
+        padding: 3px 0;
+        border-radius: 4px;
     }
 </style>
