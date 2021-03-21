@@ -7,19 +7,20 @@
 </template>
 
 <script>
+const uuid = require('uuid');
+
 export default {
     name: "weapon",
 
     props: {
+        myPlayer: {},
     },
 
     data: function () {
         return {
             rawWidth: 40,
             cursorSize: 32,
-            shootKeys: [
-
-            ],
+            shootKeys: [],
         }
     },
 
@@ -57,7 +58,14 @@ export default {
                 }
             };
 
-            this.$store.commit('bulletAdd', direction);
+            this.$store.commit('websocketsSend', {
+                action: 'addBullet',
+                data: {
+                    storeKey: uuid.v4(),
+                    playerId: this.$store.state.myPlayerId,
+                    direction: direction,
+                },
+            });
         },
 
         initKeys() {
@@ -65,7 +73,10 @@ export default {
         },
 
         removeHandlers() {
-            window.removeEventListener('mousedown', this.shoot);
+            if(!this.myPlayer)
+                return;
+
+            this.$store.state.field.component.$el.removeEventListener('click', this.shoot);
         }
     }
 }
