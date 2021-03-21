@@ -5,11 +5,17 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "ws": "node websockets/server.js"
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^3.0.0"
+    "node-uuid": "^1.4.8",
+    "uuid": "^8.3.2",
+    "vue": "^3.0.0",
+    "vue-socket.io": "^3.0.10",
+    "vuex": "^4.0.0",
+    "ws": "^7.4.4"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
