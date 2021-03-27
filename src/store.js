@@ -1,6 +1,6 @@
 import {createStore} from "vuex";
 
-const wsPort = window.location.protocol === 'http:' ? '8080' : '443';
+const wsPort = window.location.protocol === 'http:' ? '9000' : '443';
 const wsProtocol = window.location.protocol === 'http:' ? 'ws' : 'wss';
 const wsServerURL = wsProtocol + '://' + window.location.hostname + ':' + wsPort;
 

@@ -10,7 +10,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "node server.js heroku",
+    "start": "node server.js",
     "ws": "node websockets/server.js",
     "heroku": "git push heroku main"
   },
