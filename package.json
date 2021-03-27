@@ -11,6 +11,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start": "node server.js",
+    "heroku-postbuild": "node websockets/server.js",
     "ws": "node websockets/server.js",
     "heroku": "git push heroku main"
   },

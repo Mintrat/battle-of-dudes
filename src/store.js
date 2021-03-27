@@ -4,7 +4,7 @@ export default createStore({
     state () {
         return {
             websockets: {
-                server: "ws://localhost:9000/websockets.js",
+                server: "wss://weapon-battle.herokuapp.com/:9000/websockets.js",
                 connection: null,
                 subscribes: {},
             },
