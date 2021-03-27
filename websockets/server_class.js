@@ -1,11 +1,9 @@
-const WebSocket = require('ws');
 const uuid = require('uuid');
 
-const wss = new WebSocket.Server({ noServer: true });
 const clients = new Set();
 const players = {};
 
-wss.on('connection', function connection(ws) {
+function connection(ws) {
     ws.id = uuid.v4();
     clients.add(ws);
     players[ws.id] = {};
@@ -28,7 +26,7 @@ wss.on('connection', function connection(ws) {
             data: ws.id,
         });
     });
-});
+}
 
 
 function doAction(user, data) {
@@ -82,5 +80,5 @@ function websocketServerSendAll(data) {
 }
 
 module.exports = {
-    wss
+    connection
 };

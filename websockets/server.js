@@ -1,13 +1,11 @@
 const http = require('http');
 const server = http.createServer();
-const wss = require('./server_class').wss;
+const WSServer = require('ws').Server;
+const {connection} = require('./server_class');
 
 const serverPort = 9000;
 
-server.on('upgrade', function upgrade(request, socket, head) {
-    wss.handleUpgrade(request, socket, head, function done(ws) {
-        wss.emit('connection', ws, request);
-    });
-});
-
+let wss = new WSServer({ server });
 server.listen(serverPort);
+
+wss.on('connection', connection);

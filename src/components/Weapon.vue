@@ -69,14 +69,17 @@ export default {
         },
 
         initKeys() {
-            window.addEventListener('mousedown', this.shoot);
+            if(!this.myPlayer)
+                return;
+
+            this.$store.state.field.component.$el.addEventListener('mousedown', this.shoot);
         },
 
         removeHandlers() {
             if(!this.myPlayer)
                 return;
 
-            this.$store.state.field.component.$el.removeEventListener('click', this.shoot);
+            this.$store.state.field.component.$el.removeEventListener('mousedown', this.shoot);
         }
     }
 }
