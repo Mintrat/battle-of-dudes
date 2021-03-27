@@ -1,6 +1,6 @@
 import {createStore} from "vuex";
 
-const wsPort = '8080';
+const wsPort = window.location.protocol === 'http:' ? '8080' : '443';
 const wsProtocol = window.location.protocol === 'http:' ? 'ws' : 'wss';
 const wsServerURL = wsProtocol + '://' + window.location.hostname + ':' + wsPort;
 
@@ -9,7 +9,6 @@ export default createStore({
     state () {
         return {
             websockets: {
-                // server: "wss://weapon-battle.herokuapp.com:9000/",
                 server: wsServerURL,
                 connection: null,
                 subscribes: {},
