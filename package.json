@@ -6,11 +6,14 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
+    "start": "node server.js",
     "ws": "node websockets/server.js"
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "express": "^4.17.1",
     "node-uuid": "^1.4.8",
+    "serve-static": "^1.14.1",
     "uuid": "^8.3.2",
     "vue": "^3.0.0",
     "vue-socket.io": "^3.0.10",

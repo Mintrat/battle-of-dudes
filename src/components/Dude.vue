@@ -61,52 +61,28 @@ export default {
                 up: () => {
                     if(this.rawTop > 0) {
                         this.rawTop -= this.step;
-                        this.wsUpdatePlayer({
-                            position: {
-                                x: this.rawLeft,
-                                y: this.rawTop,
-                                rotate: this.rad,
-                            }
-                        });
+                        this.wsUpdatePlayer();
                     }
                 },
 
                 left: () => {
                     if(this.rawLeft > 0) {
                         this.rawLeft -= this.step;
-                        this.wsUpdatePlayer({
-                            position: {
-                                x: this.rawLeft,
-                                y: this.rawTop,
-                                rotate: this.rad,
-                            }
-                        });
+                        this.wsUpdatePlayer();
                     }
                 },
 
                 down: () => {
                     if(this.rawTop < this.fieldSize.height - this.rawHeight) {
                         this.rawTop += this.step;
-                        this.wsUpdatePlayer({
-                            position: {
-                                x: this.rawLeft,
-                                y: this.rawTop,
-                                rotate: this.rad,
-                            }
-                        });
+                        this.wsUpdatePlayer();
                     }
                 },
 
                 right: () => {
                     if(this.rawLeft < this.fieldSize.width - this.rawWidth) {
                         this.rawLeft += this.step;
-                        this.wsUpdatePlayer({
-                            position: {
-                                x: this.rawLeft,
-                                y: this.rawTop,
-                                rotate: this.rad,
-                            }
-                        });
+                        this.wsUpdatePlayer();
                     }
                 }
             },
@@ -155,15 +131,17 @@ export default {
         },
 
         playerPosition: function (newPosition) {
-            newPosition = Object.assign({
-                x: this.rawLeft,
-                y: this.rawTop,
-                rotate: this.rad,
-            }, newPosition);
+            if(!this.myPlayer) {
+                newPosition = Object.assign({
+                    x: this.rawLeft,
+                    y: this.rawTop,
+                    rotate: this.rad,
+                }, newPosition);
 
-            this.rawLeft = newPosition.x;
-            this.rawTop = newPosition.y;
-            this.rad = newPosition.rotate;
+                this.rawLeft = newPosition.x;
+                this.rawTop = newPosition.y;
+                this.rad = newPosition.rotate;
+            }
         },
     },
 
@@ -188,20 +166,36 @@ export default {
         lookAtTheCursor(posCursorX, posCursorY) {
             const center = this.getCenter();
             this.rad = Math.atan2(posCursorY - center.y, posCursorX - center.x);
-            this.wsUpdatePlayer({
+            this.wsUpdatePlayer();
+        },
+
+        wsUpdatePlayer() {
+            if(!this.myPlayer)
+                return;
+
+            const positionSendDelay = 10;
+            let data = {
                 position: {
                     x: this.rawLeft,
                     y: this.rawTop,
                     rotate: this.rad,
                 }
-            });
+            };
+
+            if(!this.updatepositionTimer) {
+                this.updatepositionTimer = setTimeout(() => {
+                    this.sendPlayerData(data);
+                    this.updatepositionTimer = null;
+                }, positionSendDelay);
+            }
         },
 
-        wsUpdatePlayer(data) {
+        sendPlayerData(data) {
             data = {
                 playerId: this.$store.state.myPlayerId,
-                data: data,
+                data: data
             };
+
             this.$store.commit('websocketsSend', {
                 action: 'updatePlayer',
                 data: data,
@@ -212,7 +206,7 @@ export default {
             if(!this.myPlayer)
                 return;
 
-            this.$store.state.field.component.$el.addEventListener('keydown', e => {
+            window.addEventListener('keydown', e => {
                 const action = this.getActionByKeyCode(e.code);
                 if (action) {
                     e.preventDefault();
@@ -221,7 +215,7 @@ export default {
                 }
             });
 
-            this.$store.state.field.component.$el.addEventListener('keyup', e => {
+            window.addEventListener('keyup', e => {
                 const action = this.getActionByKeyCode(e.code);
                 if (action) {
                     this.endAction(action);
@@ -238,7 +232,7 @@ export default {
                 this.rawLeft = Math.floor(Math.random() * Math.floor(max.x));
                 this.rawTop = Math.floor(Math.random() * Math.floor(max.y));
 
-                this.wsUpdatePlayer({
+                this.sendPlayerData({
                     health: this.health,
                     position: {
                         x: this.rawLeft,
